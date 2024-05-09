@@ -1,12 +1,31 @@
-import { WordSearch } from "@/features/word-search";
+import { AppShellAside } from "@mantine/core";
 
-export default function Rhymes({ params: { word } }: { params: { word: string } }) {
+import { fetchRhymes } from "@/api";
+import { TableOfContents } from "@/components/ui/table-of-contents/table-of-contents";
+import { RhymesList } from "@/features/rhymes-list";
+
+export default async function Rhymes({
+  params: { word },
+  searchParams,
+}: {
+  params: { word: string };
+  searchParams: { genders?: string[]; partsOfSpeech?: string[] };
+}) {
+  const genders = searchParams.genders ?? [];
+  const partsOfSpeech = searchParams.partsOfSpeech ?? [];
+
+  const rhymes = await fetchRhymes({
+    word,
+    genders,
+    partsOfSpeech,
+  });
+
   return (
-    <div className="flex h-screen w-screen justify-center pt-10">
-      <div className="flex flex-col gap-y-5">
-        <WordSearch defaultValue={word} />
-        <span>List of rhymes for word: {word}</span>
-      </div>
-    </div>
+    <>
+      <RhymesList rhymes={rhymes} word={word} />{" "}
+      <AppShellAside p="md" w={250} visibleFrom="md">
+        <TableOfContents />
+      </AppShellAside>
+    </>
   );
 }

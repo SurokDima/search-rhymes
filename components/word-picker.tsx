@@ -1,5 +1,6 @@
 "use client";
 
+import { MantineSize } from "@mantine/core";
 import { FC, useRef } from "react";
 
 import { AsyncAutocomplete } from "@/components/ui/async-autocomplete";
@@ -56,9 +57,10 @@ function getAsyncData(searchQuery: string, signal: AbortSignal) {
 export type WordPickerProps = {
   onChange?: (value: string) => void;
   defaultValue?: string;
+  size?: MantineSize;
 };
 
-export const WordPicker: FC<WordPickerProps> = ({ onChange, defaultValue }) => {
+export const WordPicker: FC<WordPickerProps> = ({ onChange, defaultValue, size }) => {
   const abortController = useRef<AbortController | null>(null);
 
   const fetchOptions = async (query: string) => {
@@ -77,8 +79,8 @@ export const WordPicker: FC<WordPickerProps> = ({ onChange, defaultValue }) => {
         onChange={onChange}
         fetchOptions={fetchOptions}
         selectFirstOption
+        size={size}
         placeholder="Search word"
-        label="Pick a word"
       />
     </div>
   );

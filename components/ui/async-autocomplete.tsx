@@ -1,7 +1,8 @@
 "use client";
 
-import { Combobox, Loader, TextInput, useCombobox } from "@mantine/core";
+import { Combobox, Loader, MantineSize, TextInput, rem, useCombobox } from "@mantine/core";
 import { useDebouncedCallback } from "@mantine/hooks";
+import { IconSearch } from "@tabler/icons-react";
 import { FC, useEffect, useState } from "react";
 
 export type AutocompleteProps = {
@@ -9,6 +10,7 @@ export type AutocompleteProps = {
   placeholder?: string;
   label?: string;
   defaultValue?: string;
+  size?: MantineSize;
   fetchOptions: (query: string) => Promise<string[]>;
   onError?: (error: Error) => void;
   renderOption?: (value: string) => Promise<JSX.Element>;
@@ -21,6 +23,7 @@ export const AsyncAutocomplete: FC<AutocompleteProps> = ({
   label,
   fetchOptions: getOptions,
   defaultValue,
+  size,
   onChange,
   renderOption = (value) => value,
   onError,
@@ -72,12 +75,14 @@ export const AsyncAutocomplete: FC<AutocompleteProps> = ({
         combobox.closeDropdown();
       }}
       width="target"
+      size={size}
       withinPortal={false}
       store={combobox}
     >
       <Combobox.Target>
         <TextInput
           label={label}
+          size={size}
           placeholder={placeholder}
           value={value}
           error={error ? "Failed to fetch options" : false}
@@ -96,11 +101,12 @@ export const AsyncAutocomplete: FC<AutocompleteProps> = ({
           }}
           className="w-full"
           onBlur={() => combobox.closeDropdown()}
-          rightSection={loading && <Loader size={18} />}
+          leftSection={<IconSearch style={{ width: rem(18), height: rem(18) }} stroke={1.5} />}
+          rightSection={loading ? <Loader size={18} /> : undefined}
         />
       </Combobox.Target>
 
-      <Combobox.Dropdown hidden={data === null || !!error}>
+      <Combobox.Dropdown hidden={data === null || !!error} style={{ zIndex: 9999999 }}>
         <Combobox.Options>
           {options}
           {empty && <Combobox.Empty>No results found</Combobox.Empty>}
