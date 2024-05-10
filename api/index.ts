@@ -1,17 +1,4 @@
-import { words } from "@/mocks/words";
+import { OwnRhymesAPI } from "@/api/own-rhymes-api";
+import { IRhymesAPI } from "@/api/types";
 
-export const fetchRhymes = async ({
-  word,
-  genders = [],
-  partsOfSpeech,
-}: {
-  word: string;
-  genders?: string[];
-  partsOfSpeech?: string[];
-}) => {
-  return new Promise<string[]>((resolve) => {
-    setTimeout(() => {
-      resolve(words);
-    }, 2000);
-  });
-};
+export const rhymesApi: IRhymesAPI = new OwnRhymesAPI();

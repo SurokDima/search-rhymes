@@ -1,52 +1,69 @@
 "use client";
 
 import { Divider, Group, Loader, Stack, Title } from "@mantine/core";
-import { ReadonlyURLSearchParams, useParams, useSearchParams } from "next/navigation";
-import { FC, useEffect, useRef, useState } from "react";
+import { groupBy, mapValues } from "lodash-es";
+import { ReadonlyURLSearchParams, useSearchParams } from "next/navigation";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 
-import { fetchRhymes } from "@/api";
 import { WithWordsList } from "@/components/with-words-list";
 import { isServer } from "@/lib/utils";
 import { useTableOfContents } from "@/providers/table-of-contents-provider";
+import { rhymesService } from "@/services";
+import { Rhyme, RhymeType } from "@/types/rhyme";
+import { Word, isWordGender, isWordPartOfSpeech } from "@/types/word";
 
 export type RhymesListProps = {
-  rhymes: string[];
-  word: string;
+  rhymes: Rhyme[];
+  word: Word;
 };
 
-export const RhymesList: FC<RhymesListProps> = ({ rhymes, word: serverSideWord }) => {
+const SECTION_TITLES: {
+  [key in RhymeType]: {
+    title: string;
+    id: string;
+  };
+} = {
+  [RhymeType.ACCURATE]: { id: "точні_рими", title: "Точні рими" },
+  [RhymeType.ASSONANCE]: { id: "асонанси", title: "Асонанси" },
+  [RhymeType.DISASSONANCE]: { id: "дисонанси", title: "Дисонанси" },
+};
+
+export const RhymesList: FC<RhymesListProps> = ({ rhymes, word }) => {
   const { updateTableOfContents } = useTableOfContents();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
-  const { word: clientSideWord } = useParams<{ word: string }>();
-  const word = clientSideWord ?? serverSideWord;
   const lastSearchParamsRef = useRef<ReadonlyURLSearchParams | null>(null);
-  console.log("WORD", word, clientSideWord, serverSideWord);
 
   useEffect(() => {
-    console.log("searchParams", searchParams);
     if (isServer() || lastSearchParamsRef.current === searchParams) return;
     if (!lastSearchParamsRef.current) {
       lastSearchParamsRef.current = searchParams;
       return;
     }
-    const genders = searchParams.getAll("genders") ?? [];
-    const partsOfSpeech = searchParams.getAll("partsOfSpeech") ?? [];
+    const genders = searchParams.getAll("genders").filter(isWordGender);
+    const partsOfSpeech = searchParams.getAll("partsOfSpeech").filter(isWordPartOfSpeech);
 
     setIsLoading(true);
 
-    fetchRhymes({
-      word,
-      genders,
-      partsOfSpeech,
-    }).finally(() => setIsLoading(false));
+    rhymesService
+      .getRhymes({ word: word.word, genders, partsOfSpeech })
+      .finally(() => setIsLoading(false));
+    // We need to spy on searchParams.toString() because searchParams link gets updated when hash params are changed
+    // while the value is the same
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams.toString(), word]);
 
   useEffect(() => {
-    console.log("updateTableOfContents");
     if (isLoading) return;
     updateTableOfContents();
   }, [updateTableOfContents, isLoading]);
+
+  const groupedRhymes = useMemo(
+    () => mapValues(groupRhymesByType(rhymes), (rhymes) => groupRhymesBySyllables(rhymes)),
+    [rhymes]
+  );
+
+  console.log("groupedRhymes", groupedRhymes, rhymes);
 
   return isLoading ? (
     <Group justify="center">
@@ -54,91 +71,49 @@ export const RhymesList: FC<RhymesListProps> = ({ rhymes, word: serverSideWord }
     </Group>
   ) : (
     <Stack gap="lg">
-      <RhymesTitle order={2} heading="Точні рими" id="точні_рими">
-        <Title order={2}>Точні рими</Title>
+      {Object.entries(groupedRhymes).map(([type, groupedRhymes]) => {
+        const { title, id } = SECTION_TITLES[type as RhymeType];
+
+        return (
+          <RhymesSection title={title} titleId={id} key={type} groupedRhymes={groupedRhymes} />
+        );
+      })}
+    </Stack>
+  );
+};
+
+type RhymesSectionProps = {
+  /** Rhymes grouped by syllables number */
+  groupedRhymes: Record<number, Rhyme[]>;
+  title: string;
+  titleId: string;
+};
+
+const RhymesSection: FC<RhymesSectionProps> = ({ title, titleId, groupedRhymes }) => {
+  return (
+    <Stack gap="md">
+      <RhymesTitle order={2} heading={title} id={titleId}>
+        <Title order={2}>{title}</Title>
       </RhymesTitle>
-      <Stack gap="md">
-        <Divider
-          label={
-            <RhymesTitle id="2_склади" order={3} heading="2 склади">
-              <Title order={3} size="sm">
-                2 склади
-              </Title>
-            </RhymesTitle>
-          }
-          labelPosition="left"
-        />
-        <WithWordsList words={rhymes} />
-      </Stack>
-      <Stack gap="md">
-        <Divider
-          label={
-            <RhymesTitle id="3_склади" order={3} heading="3 склади">
-              <Title order={3} size="sm">
-                3 склади
-              </Title>
-            </RhymesTitle>
-          }
-          labelPosition="left"
-        />
-        <WithWordsList words={rhymes} />
-      </Stack>
-      <RhymesTitle order={2} heading="Асонанси" id="асонанси">
-        <Title order={2}>Асонанси</Title>
-      </RhymesTitle>
-      <Stack gap="md">
-        <Divider
-          label={
-            <RhymesTitle id="Асонанси_2_склади" order={3} heading="2 склади">
-              <Title size="sm">2 склади</Title>
-            </RhymesTitle>
-          }
-          labelPosition="left"
-        />
-        <WithWordsList words={rhymes} />
-      </Stack>
-      <Stack gap="md">
-        <Divider
-          label={
-            <RhymesTitle id="Асонанси_3_склади" order={3} heading="3 склади">
-              <Title order={3} size="sm">
-                3 склади
-              </Title>
-            </RhymesTitle>
-          }
-          labelPosition="left"
-        />
-        <WithWordsList words={rhymes} />
-      </Stack>
-      <RhymesTitle order={2} heading="Дисонанси" id="дисонанси">
-        <Title order={2}>Дисонанси</Title>
-      </RhymesTitle>
-      <Stack gap="md">
-        <Divider
-          label={
-            <RhymesTitle id="дисонанси_2_склади" order={3} heading="2 склади">
-              <Title order={3} size="sm">
-                2 склади
-              </Title>
-            </RhymesTitle>
-          }
-          labelPosition="left"
-        />
-        <WithWordsList words={rhymes} />
-      </Stack>
-      <Stack gap="md">
-        <Divider
-          label={
-            <RhymesTitle id="дисонанси_3_склади" order={3} heading="3 склади">
-              <Title order={3} size="sm">
-                3 склади
-              </Title>
-            </RhymesTitle>
-          }
-          labelPosition="left"
-        />
-        <WithWordsList words={rhymes} />
-      </Stack>
+      {Object.entries(groupedRhymes).map(([syllables, rhymes]) => (
+        <>
+          <Divider
+            label={
+              <RhymesTitle
+                id={`${titleId}_${syllables}_склади`}
+                order={3}
+                heading={`${syllables} склади`}
+              >
+                <Title order={3} size="sm">
+                  {syllables} склади
+                </Title>
+              </RhymesTitle>
+            }
+            labelPosition="left"
+          />
+          <WithWordsList words={rhymes.map((rhyme) => rhyme.word)} />
+        </>
+      ))}
     </Stack>
   );
 };
@@ -160,4 +135,12 @@ const RhymesTitle: FC<{
       {children}
     </div>
   );
+};
+
+const groupRhymesByType = (rhymes: Rhyme[]): Record<RhymeType, Rhyme[]> => {
+  return groupBy(rhymes, (rhyme) => rhyme.type) as Record<RhymeType, Rhyme[]>;
+};
+
+const groupRhymesBySyllables = (rhymes: Rhyme[]): Record<number, Rhyme[]> => {
+  return groupBy(rhymes, (rhyme) => rhyme.word.syllables);
 };
