@@ -4,9 +4,10 @@ import { FC } from "react";
 
 import { splitArray } from "@/lib/utils";
 import { ListType } from "@/providers/list-type-provider";
+import type { Word } from "@/types/word";
 
 export type WordsListProps = {
-  words: string[];
+  words: Word[];
   type?: ListType;
 };
 
@@ -23,14 +24,14 @@ export const WordsList: FC<WordsListProps> = ({ words, type = "horizontal" }) =>
 };
 
 type HorizontalWordsListProps = {
-  words: string[];
+  words: Word[];
 };
 
 const HorizontalWordsList: FC<HorizontalWordsListProps> = ({ words }) => {
   return (
     <Group gap="sm">
       {words.map((word) => (
-        <Word word={word} key={word} />
+        <Word word={word} key={word.word} />
       ))}
     </Group>
   );
@@ -38,7 +39,7 @@ const HorizontalWordsList: FC<HorizontalWordsListProps> = ({ words }) => {
 
 type VerticalWordsListProps = {
   columns?: number;
-  words: string[];
+  words: Word[];
 };
 
 const VerticalWordsList: FC<VerticalWordsListProps> = ({ words, columns = 5 }) => {
@@ -52,7 +53,7 @@ const VerticalWordsList: FC<VerticalWordsListProps> = ({ words, columns = 5 }) =
       {chunks.map((chunk, index) => (
         <Stack gap="sm" key={index}>
           {chunk.map((word) => (
-            <Word word={word} key={word} />
+            <Word word={word} key={word.word} />
           ))}
         </Stack>
       ))}
@@ -60,10 +61,10 @@ const VerticalWordsList: FC<VerticalWordsListProps> = ({ words, columns = 5 }) =
   );
 };
 
-const Word: FC<{ word: string }> = ({ word }) => {
+const Word: FC<{ word: Word }> = ({ word }) => {
   return (
-    <Anchor component={Link} href={`/rhymes/${word}`} key={word}>
-      {word}
+    <Anchor component={Link} href={`/rhymes/${word.word}`}>
+      {word.word}
     </Anchor>
   );
 };

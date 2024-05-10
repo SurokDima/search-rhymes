@@ -1,6 +1,6 @@
 "use client";
 import { Anchor, CloseButton, Group, InputBase, Pill, Stack, Text } from "@mantine/core";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { FC } from "react";
 
 import {

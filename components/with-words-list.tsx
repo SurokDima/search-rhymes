@@ -4,9 +4,10 @@ import { FC } from "react";
 
 import { WordsList } from "@/components/word-list";
 import { ListType, useListType } from "@/providers/list-type-provider";
+import { Word } from "@/types/word";
 
 export type WithWordsListProps = {
-  words: string[];
+  words: Word[];
   type?: ListType;
 };
 

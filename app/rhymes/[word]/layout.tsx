@@ -11,12 +11,14 @@ import { ActionToolbar, ActionToolbarProvider } from "@/providers/toolbar-action
 import styles from "./layout.module.scss";
 
 export default function RhymesLayout({
-  params: { word },
+  params: { word: rawWord },
   children,
 }: {
   params: { word: string };
   children: React.ReactNode;
 }) {
+  const word = decodeURIComponent(rawWord);
+
   return (
     <ActionToolbarProvider>
       <ListTypeProvider>
