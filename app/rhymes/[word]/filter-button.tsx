@@ -12,7 +12,7 @@ import {
   Stack,
 } from "@mantine/core";
 import { IconFilter } from "@tabler/icons-react";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -58,7 +58,6 @@ const validationSchema = z.object({
 export const FilterButton: FC = () => {
   const [isOpen, setIsOpened] = useState(false);
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
 
   const searchParamsGenders = searchParams.getAll("genders");
@@ -108,10 +107,7 @@ export const FilterButton: FC = () => {
     });
   }, [reset, searchParams]);
 
-  console.log("errors", errors);
-
   const handleSubmit = ({ genders, partsOfSpeech }: FormData) => {
-    console.log("data", genders, partsOfSpeech);
     const params = new URLSearchParams(searchParams.toString());
 
     if (params.has("genders")) params.delete("genders");
@@ -126,7 +122,7 @@ export const FilterButton: FC = () => {
       params.append("partsOfSpeech", partOfSpeech);
     });
 
-    window.history.replaceState(null, '', `${pathname}?${params.toString()}`);
+    window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
     setIsOpened(false);
   };
 

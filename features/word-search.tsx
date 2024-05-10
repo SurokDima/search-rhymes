@@ -3,7 +3,7 @@
 import { Box } from "@mantine/core";
 import { useInViewport } from "@mantine/hooks";
 import { useRouter } from "next/navigation";
-import { FC, useEffect } from "react";
+import { FC, useCallback, useEffect } from "react";
 
 import { WordPicker } from "@/components/word-picker";
 import { useActionToolbar } from "@/providers/toolbar-action-provider";
@@ -18,9 +18,12 @@ export const WordSearch: FC<WordSearchProps> = ({ defaultValue }) => {
   const isSearchVisible = inViewport || ref.current === null;
   const { register, unregister } = useActionToolbar();
 
-  const handleChange = (value: string) => {
-    router.push(`/rhymes/${value}`);
-  };
+  const handleChange = useCallback(
+    (value: string) => {
+      router.push(`/rhymes/${value}`);
+    },
+    [router]
+  );
 
   useEffect(() => {
     if (!isSearchVisible) {
@@ -32,7 +35,9 @@ export const WordSearch: FC<WordSearchProps> = ({ defaultValue }) => {
     } else {
       unregister();
     }
-  }, [isSearchVisible]);
+
+    return () => unregister();
+  }, [isSearchVisible, defaultValue, register, unregister, handleChange]);
 
   return (
     <div ref={ref} style={{ flex: "1 1 auto" }}>
