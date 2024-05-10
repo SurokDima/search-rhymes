@@ -47,7 +47,6 @@ const VerticalWordsList: FC<VerticalWordsListProps> = ({ words, columns = 5 }) =
     <Group
       justify={
         chunks.length > 2 ? "space-between" : chunks.length === 2 ? "space-around" : "center"
-
       }
     >
       {chunks.map((chunk, index) => (

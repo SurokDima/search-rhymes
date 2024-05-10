@@ -43,7 +43,6 @@ export function TableOfContents() {
 
   const filteredHeadings = headings.filter((heading) => heading.depth > 1);
 
-  console.log("filteredHeadings", filteredHeadings);
   const handleScroll = () => {
     setActive(
       getActiveElement(
@@ -74,7 +73,6 @@ export function TableOfContents() {
   if (filteredHeadings.length === 0) {
     return null;
   }
-  
 
   const items = filteredHeadings.map((heading, index) => (
     <Box

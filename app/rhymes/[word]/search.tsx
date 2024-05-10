@@ -14,11 +14,7 @@ export const Search: FC<{ word: string }> = ({ word }) => {
   const searchParams = useSearchParams();
   const genders = searchParams.getAll("genders") ?? [];
   const partsOfSpeech = searchParams.getAll("partsOfSpeech") ?? [];
-  const router = useRouter();
   const pathname = usePathname();
-
-  console.log("genders", genders);
-  console.log("partsOfSpeech", partsOfSpeech);
 
   const removeGenders = (gendersToRemove: string[]) => {
     return genders.filter((gender) => !gendersToRemove.includes(gender));
@@ -53,13 +49,12 @@ export const Search: FC<{ word: string }> = ({ word }) => {
 
   return (
     <Stack gap="md">
-
       <Group gap="md" wrap="nowrap">
         <WordSearch defaultValue={word} />
         <FilterButton />
       </Group>
       {(genders.length > 0 || partsOfSpeech.length > 0) && (
-        <Group align="center" visibleFrom='sm'>
+        <Group align="center" visibleFrom="sm">
           <Text>Фільтри</Text>
           {genders.length > 0 && (
             <InputBase

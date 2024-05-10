@@ -42,8 +42,6 @@
   height: var(--mantine-font-size-sm);
 }
 
-
 .skeleton.short {
   width: rem(50px);
 }
-
