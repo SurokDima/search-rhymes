@@ -1,16 +1,17 @@
 "use client";
 
-import { Divider, Group, Loader, Stack, Title } from "@mantine/core";
+import { Chip, ChipGroup, Divider, Group, Loader, Stack, Title } from "@mantine/core";
 import { groupBy, mapValues } from "lodash-es";
 import { ReadonlyURLSearchParams, useSearchParams } from "next/navigation";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
+import { StressedWordText } from "@/components/stressed-word-text";
 import { WithWordsList } from "@/components/with-words-list";
 import { isServer } from "@/lib/utils";
 import { useTableOfContents } from "@/providers/table-of-contents-provider";
 import { rhymesService } from "@/services";
 import { Rhyme, RhymeType } from "@/types/rhyme";
-import { Word, isWordGender, isWordPartOfSpeech } from "@/types/word";
+import { Word, WordPartOfSpeech, createStressedWord, isWordPartOfSpeech } from "@/types/word";
 
 export type RhymesListProps = {
   rhymes: Rhyme[];
@@ -28,10 +29,19 @@ const SECTION_TITLES: {
   [RhymeType.DISASSONANCE]: { id: "дисонанси", title: "Дисонанси" },
 };
 
-export const RhymesList: FC<RhymesListProps> = ({ rhymes, word }) => {
+export const RhymesList: FC<RhymesListProps> = ({ rhymes: serverRhymes, word }) => {
   const { updateTableOfContents } = useTableOfContents();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const stressPositionStr = searchParams.get("stressPosition") ?? null;
+  const stressPosition = stressPositionStr ? Number(stressPositionStr) : null;
+  const [rhymes, setRhymes] = useState(serverRhymes);
+
+  const stressedWord = useMemo(
+    () => createStressedWord(word, stressPosition ?? word.defaultStressPosition),
+    [word, stressPosition]
+  );
+
   const lastSearchParamsRef = useRef<ReadonlyURLSearchParams | null>(null);
 
   useEffect(() => {
@@ -40,18 +50,23 @@ export const RhymesList: FC<RhymesListProps> = ({ rhymes, word }) => {
       lastSearchParamsRef.current = searchParams;
       return;
     }
-    const genders = searchParams.getAll("genders").filter(isWordGender);
+    // const genders = searchParams.getAll("genders").filter(isWordGender);
     const partsOfSpeech = searchParams.getAll("partsOfSpeech").filter(isWordPartOfSpeech);
 
     setIsLoading(true);
 
     rhymesService
-      .getRhymes({ word: word.word, genders, partsOfSpeech })
+      .getRhymes({
+        word: stressedWord.word,
+        stressPosition: stressedWord.currentStressPosition,
+        partsOfSpeech: partsOfSpeech.length > 0 ? partsOfSpeech : Object.values(WordPartOfSpeech),
+      })
+      .then((rhymes) => setRhymes(rhymes))
       .finally(() => setIsLoading(false));
     // We need to spy on searchParams.toString() because searchParams link gets updated when hash params are changed
     // while the value is the same
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams.toString(), word]);
+  }, [searchParams.toString(), stressedWord]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -63,21 +78,41 @@ export const RhymesList: FC<RhymesListProps> = ({ rhymes, word }) => {
     [rhymes]
   );
 
-  console.log("groupedRhymes", groupedRhymes, rhymes);
+  const handleStressChange = (stress: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("stressPosition", String(stress));
+    window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+  };
 
-  return isLoading ? (
-    <Group justify="center">
-      <Loader />
-    </Group>
-  ) : (
-    <Stack gap="lg">
-      {Object.entries(groupedRhymes).map(([type, groupedRhymes]) => {
-        const { title, id } = SECTION_TITLES[type as RhymeType];
+  return (
+    <Stack gap="md">
+      <ChipGroup
+        onChange={(value) => handleStressChange(Number(value))}
+        value={String(stressedWord.currentStressPosition)}
+      >
+        <Group gap="sm">
+          {word.possibleStressPositions.map((position, index) => (
+            <Chip key={index} value={String(position)}>
+              <StressedWordText stressedWord={createStressedWord(word, position)} />
+            </Chip>
+          ))}
+        </Group>
+      </ChipGroup>
+      {isLoading ? (
+        <Group justify="center">
+          <Loader />
+        </Group>
+      ) : (
+        <Stack gap="lg">
+          {Object.entries(groupedRhymes).map(([type, groupedRhymes]) => {
+            const { title, id } = SECTION_TITLES[type as RhymeType];
 
-        return (
-          <RhymesSection title={title} titleId={id} key={type} groupedRhymes={groupedRhymes} />
-        );
-      })}
+            return (
+              <RhymesSection title={title} titleId={id} key={type} groupedRhymes={groupedRhymes} />
+            );
+          })}
+        </Stack>
+      )}
     </Stack>
   );
 };

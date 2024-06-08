@@ -11,9 +11,10 @@ export enum ApiWordPartOfSpeech {
 
 export type ApiWord = {
   word: string;
-  stressPositions: number[];
   syllables: number;
   gender: ApiWordGender;
+  possibleStressPositions: ApiStressPosition[];
+  defaultStressPosition: ApiStressPosition;
   partOfSpeech: ApiWordPartOfSpeech;
 };
 
@@ -27,3 +28,8 @@ export type ApiRhyme = {
   word: ApiWord;
   type: ApiRhymeType;
 };
+
+export type ApiStressPosition = number;
+
+export const isApiStressPositionEqual = (a: ApiStressPosition, b: ApiStressPosition): boolean =>
+  a === b;

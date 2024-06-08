@@ -1,23 +1,27 @@
 import { rhymesApi } from "@/api";
 import { IRhymesService } from "@/services/types";
 import { Rhyme } from "@/types/rhyme";
-import { WordGender, WordPartOfSpeech } from "@/types/word";
+import { StressPosition, WordPartOfSpeech } from "@/types/word";
 
 export class RhymesService implements IRhymesService {
   public async getRhymes({
     word,
-    genders,
+    // genders,
+    stressPosition,
     partsOfSpeech,
   }: {
     word: string;
-    genders: WordGender[];
+    stressPosition: StressPosition;
+    // genders: WordGender[];
     partsOfSpeech: WordPartOfSpeech[];
   }): Promise<Rhyme[]> {
-    const rhymes = await rhymesApi.fetchRhymes(word);
-
-    return rhymes.filter(
-      (rhyme) =>
-        partsOfSpeech.includes(rhyme.word.partOfSpeech) && genders.includes(rhyme.word.gender)
+    console.log("RhymesService -> getRhymes -> word", word, stressPosition, partsOfSpeech);
+    const rhymes = await rhymesApi.fetchRhymes(word, stressPosition);
+    console.log(
+      "RhymesService -> getRhymes -> rhymes",
+      rhymes,
+      rhymes.filter((rhyme) => partsOfSpeech.includes(rhyme.word.partOfSpeech))
     );
+    return rhymes.filter((rhyme) => partsOfSpeech.includes(rhyme.word.partOfSpeech));
   }
 }

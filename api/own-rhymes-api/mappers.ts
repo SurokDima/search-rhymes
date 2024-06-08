@@ -1,10 +1,20 @@
 import { Rhyme, RhymeType } from "@/types/rhyme";
-import { Word, WordGender, WordPartOfSpeech } from "@/types/word";
+import { StressPosition, Word, WordGender, WordPartOfSpeech } from "@/types/word";
 
-import { ApiRhyme, ApiRhymeType, ApiWord, ApiWordGender, ApiWordPartOfSpeech } from "./types";
+import {
+  ApiRhyme,
+  ApiRhymeType,
+  ApiStressPosition,
+  ApiWord,
+  ApiWordGender,
+  ApiWordPartOfSpeech,
+} from "./types";
 
 export const mapWord = (apiWord: ApiWord): Word => ({
-  ...apiWord,
+  word: apiWord.word,
+  syllables: apiWord.syllables,
+  possibleStressPositions: apiWord.possibleStressPositions.map(mapToStressPosition),
+  defaultStressPosition: mapToStressPosition(apiWord.defaultStressPosition),
   gender: mapGender(apiWord.gender),
   partOfSpeech: mapPartOfSpeech(apiWord.partOfSpeech),
 });
@@ -42,3 +52,9 @@ const rhymeTypeMap: { [K in ApiRhymeType]: RhymeType } = {
 export const mapRhymeType = (apiRhymeType: ApiRhymeType): RhymeType => {
   return rhymeTypeMap[apiRhymeType];
 };
+
+export const mapToApiStressPosition = (stressPosition: StressPosition): ApiStressPosition =>
+  stressPosition;
+
+export const mapToStressPosition = (apiStressPosition: ApiStressPosition): StressPosition =>
+  apiStressPosition;
