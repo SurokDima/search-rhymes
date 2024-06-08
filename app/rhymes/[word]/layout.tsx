@@ -91,7 +91,7 @@ export default function RhymesLayout({
                       underline="hover"
                       component={Link}
                       className={styles.word}
-                      href={`rhymes/${word}`}
+                      href={`/rhymes/${word}`}
                     >
                       {word}
                     </Anchor>

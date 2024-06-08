@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ActionIcon,
   Button,
-  Divider,
   Group,
   Popover,
   PopoverDropdown,
@@ -20,20 +19,20 @@ import { z } from "zod";
 import { CheckboxMultiselectFormField } from "@/components/ui/checkbox-multiselect";
 
 type FormData = {
-  genders: string[];
+  // genders: string[];
   partsOfSpeech: string[];
 };
 
-export const POSSIBLE_GENDERS = [
-  {
-    label: "Чоловічі",
-    value: "man",
-  },
-  {
-    label: "Жіночі",
-    value: "woman",
-  },
-] as const;
+// export const POSSIBLE_GENDERS = [
+//   {
+//     label: "Чоловічі",
+//     value: "man",
+//   },
+//   {
+//     label: "Жіночі",
+//     value: "woman",
+//   },
+// ] as const;
 
 export const POSSIBLE_PARTS_OF_SPEECH = [
   {
@@ -51,7 +50,7 @@ export const POSSIBLE_PARTS_OF_SPEECH = [
 ];
 
 const validationSchema = z.object({
-  genders: z.array(z.string()).min(1, "Оберіть хоча б один рід"),
+  // genders: z.array(z.string()).min(1, "Оберіть хоча б один рід"),
   partsOfSpeech: z.array(z.string()).min(1, "Оберіть хоча б одну частину мови"),
 });
 
@@ -60,12 +59,12 @@ export const FilterButton: FC = () => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const searchParamsGenders = searchParams.getAll("genders");
+  // const searchParamsGenders = searchParams.getAll("genders");
 
-  const defaultGenders =
-    searchParamsGenders.length === 0
-      ? POSSIBLE_GENDERS.map((item) => item.value)
-      : searchParamsGenders;
+  // const defaultGenders =
+  //   searchParamsGenders.length === 0
+  //     ? POSSIBLE_GENDERS.map((item) => item.value)
+  //     : searchParamsGenders;
 
   const searchParamsPartsOfSpeech = searchParams.getAll("partsOfSpeech");
 
@@ -81,19 +80,19 @@ export const FilterButton: FC = () => {
     handleSubmit: onSubmit,
   } = useForm<FormData>({
     defaultValues: {
-      genders: defaultGenders,
+      // genders: defaultGenders,
       partsOfSpeech: defaultPartsOfSpeech,
     },
     resolver: zodResolver(validationSchema),
   });
 
   useEffect(() => {
-    const searchParamsGenders = searchParams.getAll("genders");
+    // const searchParamsGenders = searchParams.getAll("genders");
 
-    const defaultGenders =
-      searchParamsGenders.length === 0
-        ? POSSIBLE_GENDERS.map((item) => item.value)
-        : searchParamsGenders;
+    // const defaultGenders =
+    //   searchParamsGenders.length === 0
+    //     ? POSSIBLE_GENDERS.map((item) => item.value)
+    //     : searchParamsGenders;
 
     const searchParamsPartsOfSpeech = searchParams.getAll("partsOfSpeech");
 
@@ -101,20 +100,21 @@ export const FilterButton: FC = () => {
       searchParamsPartsOfSpeech.length === 0
         ? POSSIBLE_PARTS_OF_SPEECH.map((item) => item.value)
         : searchParamsPartsOfSpeech;
+
     reset({
-      genders: defaultGenders,
+      // genders: defaultGenders,
       partsOfSpeech: defaultPartsOfSpeech,
     });
   }, [reset, searchParams]);
 
-  const handleSubmit = ({ genders, partsOfSpeech }: FormData) => {
+  const handleSubmit = ({ partsOfSpeech }: FormData) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    if (params.has("genders")) params.delete("genders");
+    // if (params.has("genders")) params.delete("genders");
 
-    genders.forEach((gender) => {
-      params.append("genders", gender);
-    });
+    // genders.forEach((gender) => {
+    //   params.append("genders", gender);
+    // });
 
     if (params.has("partsOfSpeech")) params.delete("partsOfSpeech");
 
@@ -136,14 +136,14 @@ export const FilterButton: FC = () => {
       <PopoverDropdown>
         <Stack gap="md">
           <Group gap="md" wrap="nowrap" align="flex-start">
-            <CheckboxMultiselectFormField
+            {/* <CheckboxMultiselectFormField
               name="genders"
               control={control}
               items={POSSIBLE_GENDERS}
               errors={errors}
               label="Рід"
-            />
-            <Divider orientation="vertical" />
+            /> */}
+            {/* <Divider orientation="vertical" /> */}
             <CheckboxMultiselectFormField
               name="partsOfSpeech"
               control={control}
@@ -159,7 +159,7 @@ export const FilterButton: FC = () => {
               onClick={() => {
                 setIsOpened(false);
                 reset({
-                  genders: defaultGenders,
+                  // genders: defaultGenders,
                   partsOfSpeech: defaultPartsOfSpeech,
                 });
               }}
